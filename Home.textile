@@ -1,0 +1,35 @@
+h3. 综述
+* "关于MaNGOS":https://github.com/cmangos/mangos-wotlk#readme
+* "新手指南":https://github.com/vanrhy/linguister/wiki/Beginners-Guide-Home
+* "安装说明":https://github.com/vanrhy/linguister/wiki/Installation-Instructions
+* "常见问题":https://github.com/vanrhy/linguister/wiki/FAQ-Frequently-Asked-Questions
+
+h3. 开发
+
+* "BUG记录&相关问题":https://github.com/cmangos/issues/issues (read "this":https://github.com/cmangos/mangos-wotlk/blob/master/CONTRIBUTING.md#bug-reports first)
+* "贡献的方法":https://github.com/cmangos/mangos-wotlk/blob/master/CONTRIBUTING.md
+* "编码标准":https://github.com/vanrhy/linguister/wiki/Coding-Standards
+* "GIT指南":https://github.com/vanrhy/linguister/wiki/Git-tutorials
+* "路线图":https://github.com/cmangos/issues/issues/1
+
+h3. 数据库结构
+
+* "CMaNGOS 的数据库描述":https://github.com/vanrhy/linguister/wiki/mangosdb_struct
+* "Characters 数据库描述":https://github.com/vanrhy/linguister/wiki/charactersdb_struct
+* "Realm 数据库描述":https://github.com/vanrhy/linguister/wiki/realmdb_struct
+
+h3. 外部数据资料
+
+一些有用的资料比如DBC链接到CMaNGOS里的数据资料. 这个页面也展示了一些CMaNGOS数据列表的内容模板. 然后我们更新这些页面的信息发生改变时,它反映在所有页面,包括这些模板.
+
+* "DBC文件类容描述":https://github.com/vanrhy/linguister/wiki/dbc_files
+* "WDB文件类容描述":https://github.com/vanrhy/linguister/wiki/wdb_files
+* "character数据表中的字段描述":https://github.com/vanrhy/linguister/wiki/character_data
+
+h3. 高级
+
+* "补丁教程":https://github.com/vanrhy/linguister/wiki/Backporting-Tutorial
+* "经典客户端文件格式":https://github.com/vanrhy/linguister/wiki/Client-File-Formats
+* "Classic Backporting TODO TBC Commits":https://github.com/vanrhy/linguister/wiki/Classic-Backporting-TODO-TBC-Commits
+* "TBC Backporting TODO WOTLK Commits":https://github.com/vanrhy/linguister/wiki/TBC-Backporting-TODO-WOTLK-Commits
+* "Cata Backporting TODO WOTLK Commits":https://github.com/vanrhy/linguister/wiki/Cata-Backporting-TODO-WOTLK-Commits

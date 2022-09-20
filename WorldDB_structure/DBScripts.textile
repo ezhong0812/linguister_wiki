@@ -1,0 +1,460 @@
+Back to "world database":mangosdb_struct list of tables.
+
+h2. The `dbscripts&#95;on&#95;&#42;` tables
+
+The manual reference for these tables is located in the "doc/script_commands.txt":https://github.com/cmangos/mangos-wotlk/blob/master/doc/script_commands.txt file.
+
+*The information below may be outdated, use with caution!*
+
+
+This table format is used for different tables to control possible scripts activated by different actions:
+
+* *`dbscripts&#95;on&#95;go_[template]_use:* Holds possible scripts activated by gameobjects.
+    Source: object user (unit); Target: gameobject.
+    ** dbscripts_on_go_template_use can be used for any type of gameobject.
+    ** dbscripts_on_go_use can be used only for GAMEOBJECT&#95;TYPE&#95;DOOR (0) and GAMEOBJECT&#95;TYPE&#95;BUTTON (1)
+
+* *`dbscripts&#95;on&#95;spell:* Holds scripts that can be activated by spells with the following spell effects:
+    ** SPELL&#95;EFFECT&#95;DUMMY (3)
+    ** SPELL&#95;EFFECT&#95;TRIGGER_SPELL (64) - only for missing triggered spells
+    ** SPELL&#95;EFFECT&#95;SCRIPT&#95;EFFECT (77)
+    Source: caster; Target: target.
+
+* *`dbscripts&#95;on&#95;quest&#95;start:* Holds scripts activated when a player accepts a quest.
+    Source: quest giver (creature); Target: player; Script execution unique by source.
+
+* *`dbscripts&#95;on&#95;quest&#95;end:* Holds scripts activated when a player finishes a quest.
+    Source: quest taker (creature); Target: player; Script execution unique by source.
+
+* *`dbscripts&#95;on&#95;creature&#95;movement:* Holds scripts activated while a npc is moving.
+    Source: moving creature; Target moving creature.
+
+* *`dbscripts&#95;on&#95;creature&#95;death:* Holds scripts activated when a creature dies.
+    Source: killed creature; Target: responsible killer (unit or player).
+
+* *`dbscripts&#95;on&#95;event:* Holds scripts activated whenever an event is activated by spell, gameobject or taxi waypoints. The following spell effects and gameobjecs can activate an event:
+    ** SPELL&#95;EFFECT&#95;SEND&#95;EVENT (61)
+    ** GAMEOBJECT&#95;TYPE&#95;CHEST (3)
+    ** GAMEOBJECT&#95;TYPE&#95;GOOBER (10)
+    ** GAMEOBJECT&#95;TYPE&#95;TRANSPORT (11) [not supported yet]
+    ** GAMEOBJECT&#95;TYPE&#95;CAMERA (13)
+    ** GAMEOBJECT&#95;TYPE&#95;MO&#95;TRANSPORT (15) [partially supported]
+    ** GAMEOBJECT&#95;TYPE&#95;FLAGDROP (26) [not supported yet]
+    ** GAMEOBJECT&#95;TYPE&#95;CAPTURE_POINT (29)
+    ** GAMEOBJECT&#95;TYPE&#95;DESTRUCTIBLE_BUILDING (33)
+    Source, Target and Script execution can be different based on the event activation source.
+
+* *`dbscripts&#95;on&#95;gossip:* Holds scripts activated on gossip&#95;menu&#95;option or gossip&#95;menu.
+    ** For gossip&#95;menu - Source: player; Target: gossip holder (creature or gameobject); Script execution unique by target.
+    ** For gossip&#95;menu&#95;option when gossip holder is creature - Source: gossip holder (creature); Target: player; Script execution unique by source.
+    ** For gossip&#95;menu&#95;option when gossip holder is gameobject - Source: player; Target: gossip holder (gameobject); Script execution unique by target.
+
+NOTE: An entry in this table may have more than one row as a script may do more than just one action. Also each action the script may make can have a separate delay attached to it. In that case, the core will activate the appropriate action after the correct delay.
+
+h3. Structure
+
+
+|*Field*|*Type*|*Null*|*Key*|*Default*|*Extra*|
+|"id":DBScripts#id|int(8) unsigned|NO||0||
+|"delay":DBScripts#delay|int(10) unsigned|NO||0||
+|"command":DBScripts#command|mediumint(8) unsigned|NO||0||
+|"datalong":DBScripts#otherfields|mediumint(8) unsigned|NO||0||
+|"datalong2":DBScripts#otherfields|int(10) unsigned|NO||0||
+|"buddy_entry":DBScripts#buddy_concept|int(10) unsigned|NO||0||
+|"search_radius":DBScripts#search_radius|int(10) unsigned|NO||0||
+|"data_flags":DBScripts#data_flags|tinyint(3) unsigned|NO||0||
+|"dataint":DBScripts#otherfields|int(11)|NO||0||
+|"dataint2":DBScripts#otherfields|int(11)|NO||0||
+|"dataint3":DBScripts#otherfields|int(11)|NO||0||
+|"dataint4":DBScripts#otherfields|int(11)|NO||0||
+|"x":DBScripts#otherfields|float|NO||0||
+|"y":DBScripts#otherfields|float|NO||0||
+|"z":DBScripts#otherfields|float|NO||0||
+|"o":DBScripts#otherfields|float|NO||0||
+|"Comments":DBScripts#otherfields|VARCHAR(255)|NO||NULL||
+
+
+h3. Description of the fields
+
+h4. id
+
+For *gameobject&#95;scripts*, it is the guid of the button/lever. See "gameobject.guid":gameobject#guid.
+For *gameobject_template&#95;scripts*, it is the entry of the button/lever. See "gameobject_template.entry":gameobject_template#entry.
+For *spell&#95;scripts*, it is the spell ID. See Spell.dbc
+For *quest&#95;&#42;&#95;scripts*, it is the ID that is used in "StartScript":quest_template#StartScript or "CompleteScript":quest_template#CompleteScript in the quest template definition.
+For *event&#95;scripts*, it is the event ID. There doesn't exist currently a full list of events. In any case, the event IDs are taken directly from gameobject WDB data or spell effect data. If both a gameobject and a spell activate the same event, the IDs will match.
+For *creature&#95;movement&#95;scripts*, it is the "script id":Creature_movement#script_id of the waypoint.The PROPER formatting for the ID field is as follows: Creature&#95;entry + 2-Digit Script ID (Starting at 01). Example: c.2386 has few movement&#95;scripts, so 2386+01 = 238601 ... 23602 ..etc
+For *creature&#95;death&#95;scripts*, it is the entry of the creature. See "creature_template.entry":creature_template#entry.
+For *gossip&#95;scripts*, it is the "action script id":Gossip_menu_option#action_script_id of the gossip option.
+
+h4. delay
+
+Delay in seconds before this current step of the script activates. 0 = instant.
+
+NOTE: Delay is Cumulative From Script to Script with same ID.
+Example: Script 1 Has 5 seconds delay and then if you want script 2 to trigger 3 seconds later you would use delay value 8 for script 2 in the sequence.
+
+h4. command
+
+The type of action performed by the script after "delay":#delay seconds have passed. The value of this field affects what other fields also need to be set.
+
+The following commands can be used:
+
+|_. Command|_. Name|_. Description|
+|0|TALK|Creature say/whisper/yell/textemote.|
+|1|EMOTE|Plays emote on a player/creature.|
+|2|FIELD&#95;SET|Change the value at an index for the player.|
+|3|MOVE&#95;TO|Relocate creature to a destination|
+|4|FLAG&#95;SET|Turns on bits on a flag field at an index for the player.|
+|5|FLAG&#95;REMOVE|Turns off bits on a flag field at an index for the player.|
+|6|TELEPORT&#95;TO|Teleports the player to a location.|
+|7|QUEST&#95;EXPLORED|Satisfies the explore requirement for a quest.|
+|8|KILL&#95;CREDIT|Satisfies the kill credit requirement for a quest.|
+|9|RESPAWN&#95;GAMEOBJECT|Spawns a despawned gameobject.|
+|10|TEMP&#95;SUMMON&#95;CREATURE|Temporarily summon a creature.|
+|11|OPEN&#95;DOOR|Opens a door gameobject (type == 0).|
+|12|CLOSE&#95;DOOR|Closes a door gameobject (type == 0).|
+|13|ACTIVATE&#95;OBJECT|Activate (use) a gameobject.|
+|14|REMOVE&#95;AURA|Removes an aura due to a spell.|
+|15|CAST&#95;SPELL|Casts a spell.|
+|16|PLAY&#95;SOUND|Plays a sound.|
+|17|CREATE&#95;ITEM|Creates an item.|
+|18|DESPAWN&#95;SELF|Despawns a creature with some delay.|
+|19|PLAY&#95;MOVIE|Plays a movie to the target player.|
+|20|MOVEMENT|Change the movement type of a creature (idle, random, waypoint).|
+|21|SET&#95;ACTIVEOBJECT|Set a creature as active object.|
+|22|SET&#95;FACTION|Changes the faction of a creature.|
+|23|MORPH&#95;TO&#95;ENTRY&#95;OR&#95;MODEL|Morphs a creature go a given model.|
+|24|MOUNT&#95;TO&#95;ENTRY&#95;OR&#95;MODEL|Mounts or dismounts a creature to mount entry or model.|
+|25|SET&#95;RUN|Makes a creature start or stop running.|
+|26|ATTACK&#95;START|Makes a creature attack things within a radius.|
+|27|GO&#95;LOCK&#95;STATE|Change the GO lock or interact flags.|
+|28|STAND&#95;STATE|Change the stand state of a creature.|
+|29|MODIFY&#95;NPC&#95;FLAG|Change NPC flags of a creature.|
+|30|SEND&#95;TAXI&#95;PATH|Sends a player on a give taxi path.|
+|31|TERMINATE&#95;SCRIPT|Stop script execution if a given creature entry meets conditions.|
+|32|PAUSE&#95;WAYPOINTS|Pause or unpause waypoint movement.|
+|33|XP&#95;USER|Enable or disable experience gain for a player.|
+|34|TERMINATE&#95;CONDITION|Stop script execution when a give condition is met.|
+|35|SEND&#95;AI&#95;EVENT&#95;AROUND|Send a give AI event for EventAI around the source with a given radius.|
+|36|SET&#95;FACING|Turn resulting source to resulting target.|
+|37|MOVE&#95;DYNAMIC|Move resulting source to a random point around resulting target or to resulting target.|
+|38|SEND&#95;MAIL|Send mail from resulting source to resulting target.|
+|39|SET&#95;FLY|Makes a creature start or stop flying.|
+|40|DESPAWN&#95;OBJECT|Despawns a gameobject.|
+|41|RESPAWN&#95;CREATURE|Respawns a creature.|
+|42|SET&#95;EQUIPMENT&#95;SLOTS|Change equipment slots of the resulting source.|
+|43|RESET&#95;OBJECT|Reset a gameobject.|
+
+
+h4. Buddy Concept
+
+Commands except the ones requiring a player (like KILL&#95;CREDIT) have support for the buddy concept. This means that if an entry for buddy&#95;entry is provided, aside from source and target as listed above also a &quot;buddy&quot; is available.
+
+Which one on the three (originalSource, originalTarget, buddy) will be used in the command, depends on the data&#95;flags Note that some commands (like EMOTE) use only the resulting source for an action.
+
+Possible combinations of the flags SCRIPT&#95;FLAG&#95;BUDDY&#95;AS&#95;TARGET = 0x01 SCRIPT&#95;FLAG&#95;REVERSE&#95;DIRECTION = 0x02 SCRIPT&#95;FLAG&#95;SOURCE&#95;TARGETS&#95;SELF = 0x04 are:
+
+0: originalSource / buddyIfProvided -&gt; originalTarget
+
+1: originalSource -&gt; buddy
+
+2: originalTarget -&gt; originalSource / buddyIfProvided
+
+3: buddy -&gt; originalSource
+
+4: originalSource / buddyIfProvided -&gt; originalSource / buddyIfProvided
+
+5: originalSource -&gt; originalSource
+
+6: originalTarget -&gt; originalTarget
+
+7: buddy -&gt; buddy
+
+Where &quot;A -&gt; B&quot; means that the command is executed from A with B as target.
+
+h4. Search Radius
+
+Range in which the buddy defined in "buddy_entry":DBScripts#buddy_concept will be searched.
+In case of SCRIPT_FLAG_BUDDY_BY_GUID this field is the buddy's GUID.
+
+h4. Data flags
+
+|SCRIPT_FLAG_BUDDY_AS_TARGET|0x01|1||
+|SCRIPT_FLAG_REVERSE_DIRECTION|0x02|2||
+|SCRIPT_FLAG_SOURCE_TARGETS_SELF|0x04|4||
+|SCRIPT_FLAG_COMMAND_ADDITIONAL|0x08|8|Only for some commands possible.|
+|SCRIPT_FLAG_BUDDY_BY_GUID|0x10|16|Interpret "search_radius":DBScripts#search_radius as buddy's GUID.|
+|SCRIPT_FLAG_BUDDY_IS_PET|0x20|32|Do not search for an npc, but for a pet.|
+|SCRIPT_FLAG_BUDDY_IS_DESPAWNED|0x40|64|Search for a creature that is despawned or dead.|
+
+h4. OtherFields
+
+
+Depending on what command was used, the meaning and use for the following fields varies.
+
+* *SCRIPT&#95;COMMAND&#95;TALK = 0*
+** All information of the text (type, language, associated sound, emote) is stored in the "db_script_string.":db_script_string table
+** dataint - 4: The text ID that the creature will say. See "db_script_string.":db_script_string. ID must be between 2000000000 and 2000010000. In case more then only dataint field is filled the texts will be used randomly.
+
+
+* *SCRIPT&#95;COMMAND&#95;EMOTE = 1*
+** datalong: The emote ID to play.
+** Resulting source must be a unit.
+
+
+* *SCRIPT&#95;COMMAND&#95;FIELD&#95;SET = 2*
+** datalong: Index of the field.
+** datalong2: Value to place at the index.
+
+
+* *SCRIPT&#95;COMMAND&#95;MOVE&#95;TO = 3*
+** datalong2: Length of the motion. This calculates as travel_speed*100. Use 0 for creature default movement.
+** data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL will teleport the creature to the given location.
+** x: X position to move to.
+** y: Y position to move to.
+** z: Z position to move to.
+** o: Orientation to face.
+** Resulting source must be a creature.
+_Side note: If position is very near to current position, or x=y=z=0, then only orientation is changed._
+
+
+* *SCRIPT&#95;COMMAND&#95;FLAG&#95;SET = 4*
+** datalong: Field index to be set.
+** datalong2: Flag bit(s) to set.
+
+
+* *SCRIPT&#95;COMMAND&#95;FLAG&#95;REMOVE = 5*
+** datalong: Field index to be unset.
+** datalong2: Flag bit(s) to unset.
+
+
+* *SCRIPT&#95;COMMAND&#95;TELEPORT&#95;TO = 6*
+** datalong: Target Map ID. See "Map.dbc":Map.dbc.
+** x: Teleport target x coordinate.
+** y: Teleport target y coordinate.
+** z: Teleport target z coordinate.
+** o: Teleport target orientation.
+** The source or target must be a player.
+
+
+* *SCRIPT&#95;COMMAND&#95;QUEST&#95;EXPLORED = 7*
+** datalong: "Quest ID":quest_template#entry whose external status should be satisfied.
+** datalong2: Distance away from the NPC/object that the player can be and have the script still take effect.
+** The source or target must be a player.
+
+
+* *SCRIPT&#95;COMMAND&#95;KILL&#95;CREDIT = 8*
+** datalong: Kill credit entry for quest (entry in quest&#95;template.ReqCreatureOrGOId). If set to 0 then the creature source or target will be used.
+** datalong2: Can be 0 = personal credit or 1 = group credit.
+** The source or target must be a player.
+
+
+* *SCRIPT&#95;COMMAND&#95;RESPAWN&#95;GAMEOBJECT = 9*
+** datalong: Guid of the gameobject to respawn. See "gameobject.guid":gameobject#guid.  Can be skipped for buddy.
+** datalong2: Despawn time in seconds. If the value is &lt; 5 seconds then 5 seconds is used instead.
+
+
+* *SCRIPT&#95;COMMAND&#95;TEMP&#95;SUMMON&#95;CREATURE = 10*
+** datalong: Entry of the summoned creature from "creature&#95;template.entry":creature_template#entry.
+** datalong2: Despawn time (MILLIESECONDS). If set to 0 then the creature will be despawned only when killed.
+** data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL will summon the creature as active object.
+** x: Summon target x coordinate.
+** y: Summon target y coordinate.
+** z: Summon target z coordinate.
+** o: Summon target orientation.
+
+
+* *SCRIPT&#95;COMMAND&#95;OPEN&#95;DOOR = 11*
+** datalong: Guid of the activated door. It's a "gameobject.guid":gameobject#guid. Can be skipped for buddy.
+** datalong2: Delay before closing again the door. If the value is &lt; 15 seconds then 15 seconds is used instead.
+
+
+* *SCRIPT&#95;COMMAND&#95;CLOSE&#95;DOOR = 12*
+** datalong: Guid of the activated door. It's a "gameobject.guid":gameobject#guid.  Can be skipped for buddy.
+** datalong2: Delay before opening again the door. If the value is &lt; 15 seconds then 15 is used instead.
+
+
+* *SCRIPT&#95;COMMAND&#95;ACTIVATE&#95;OBJECT = 13*
+** The source must be a unit and the target a gameobject.
+
+
+* *SCRIPT&#95;COMMAND&#95;REMOVE&#95;AURA = 14*
+** datalong: "Spell ID":Spell.dbc#Content.
+
+
+* *SCRIPT&#95;COMMAND&#95;CAST&#95;SPELL = 15*
+** datalong: "Spell ID":Spell.dbc#Content.
+** data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL will make the cast triggered.
+
+
+* *SCRIPT&#95;COMMAND&#95;PLAY&#95;SOUND = 16*
+** datalong: "Sound ID":SoundEntries.dbc#Content.
+** datalong2: bitmask: 0/1=anyone/target, 0/2=with distance dependent, 0/4=map wide, 0/8=zone wide; 1&#124;2 = 3 is target with distance dependent.
+** Source may be any object. Target may be any player.
+
+
+* *SCRIPT&#95;COMMAND&#95;CREATE&#95;ITEM = 17*
+** datalong: "Item entry":item_template#Content.
+** datalong2: Amount.
+** Source or target must be a player.
+
+
+* *SCRIPT&#95;COMMAND&#95;DESPAWN&#95;SELF = 18*
+** datalong: Despawn delay (MILLIESECONDS).
+** Resulting source must be a creature.
+** Despawns the target.
+
+
+* *SCRIPT&#95;COMMAND&#95;PLAY&#95;MOVIE = 19*
+** datalong: Plays a "movie&#95;id":Movie.dbc#Content to the target player.
+** Target must be a player.
+
+
+* *SCRIPT&#95;COMMAND&#95;MOVEMENT = 20*
+** datalong: Change the movement type of a creature. Possible values: 0 = idle, 1 = random, 2 = waypoint.
+** datalong2: Wander distance (for random movement only).
+** data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL will set random movement around the current position.
+** Resulting source must be a creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;SET&#95;ACTIVEOBJECT = 21*
+** datalong: Can be defined as 1 = On or 0 = Off. Set a creature as active object, depending on the datalong value.
+** Resulting source must be creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;SET&#95;FACTION = 22*
+** datalong: "Faction Id":FactionTemplate.dbc. If set to 0 will restore original faction from creature&#95;template.
+** Resulting source must be a creature.
+** datalong2: Temporary faction flags
+
+|TEMPFACTION&#95;NONE|0x00|When no flag is used in temporary faction change, faction will be persistent. It will then require manual change back to default/another faction when changed once.|
+|TEMPFACTION&#95;RESTORE&#95;RESPAWN|0x01|Default faction will be restored at respawn.|
+|TEMPFACTION&#95;RESTORE&#95;COMBAT&#95;STOP|0x02|at CombatStop() (happens at creature death, at evade or custom scripte among others).|
+|TEMPFACTION&#95;RESTORE&#95;REACH&#95;HOME|0x04|... at reaching home in home movement (evade), if not already done at CombatStop().|
+|TEMPFACTION&#95;TOGGLE&#95;NON&#95;ATTACKABLE|0x08|Remove UNIT_FLAG_NON_ATTACKABLE(0x02) when faction is changed (reapply when temp-faction is removed).|
+|TEMPFACTION&#95;TOGGLE&#95;OOC&#95;NOT&#95;ATTACK|0x12|Remove UNIT_FLAG_OOC_NOT_ATTACKABLE(0x100) when faction is changed (reapply when temp-faction is removed.)|
+|TEMPFACTION&#95;TOGGLE&#95;PASSIVE|0x20|Remove UNIT_FLAG_PASSIVE(0x200).|
+
+
+* *SCRIPT&#95;COMMAND&#95;MORPH&#95;TO&#95;ENTRY&#95;OR&#95;MODEL = 23*
+** datalong: Creature "entry":creature_template#entry or "model_id":creature_template#modelid (depending on data&#95;flags). If set to 0 then the creature will demorph.
+** data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL to use datalong value as model_id explicit.
+** Resulting source must be a creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;MOUNT&#95;TO&#95;ENTRY&#95;OR&#95;MODEL = 24*
+** datalong: Creature "entry":creature_template#entry or "model_id":creature_template#modelid (depending on data&#95;flags). If set to 0 then the creature will dismount.
+** data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL to use datalong value as model_id explicit.
+** Resulting source must be creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;SET&#95;RUN = 25*
+** datalong: Set run to 1 = On or 0 = Off
+** Resulting source must be a creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;ATTACK&#95;START = 26*
+** Resulting source must be a creature and resulting target must be a unit.
+
+* *SCRIPT&#95;COMMAND&#95;GO&#95;LOCK&#95;STATE = 27*
+** Resulting source must be gameobject.
+** datalong:
+
+|flag&#95;go&#95;lock|0x01|
+|flag&#95;go&#95;unlock|0x02|
+|flag&#95;go&#95;nonInteract|0x04|
+|flag&#95;go&#95;interact|0x08|
+
+
+* *SCRIPT&#95;COMMAND&#95;STAND&#95;STATE = 28*
+** datalong: stand state (enum UnitStandStateType)
+** Resulting source must be a creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;MODIFY&#95;NPC&#95;FLAGS = 29*
+** Resulting source must be a creature.
+** datalong: NPC Flags
+** datalong2:
+
+|toggle|0x00|
+|add|0x01|
+|remove|0x02|
+
+
+* *SCRIPT&#95;COMMAND&#95;SEND&#95;TAXY&#95;PATH = 30*
+** datalong: "Taxi path id":TaxiPath.dbc#Content.
+** Source or target must be a player.
+
+
+* *SCRIPT&#95;COMMAND&#95;TERMINATE&#95;SCRIPT = 31*
+** datalong: "Creature entry":creature_template#entry if provided.
+** datalong2: Search distance.
+** dataint: Change of "waittime":creature_movement#waittime (MILLIESECONDS) of a current waypoint movement type. Negative values will decrease time.
+** data&#95;flags:
+
+|!(data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL)|If creature is not found or not alive, terminate script.|
+|data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL|If creature is found and alive, terminate script.|
+
+
+* *SCRIPT&#95;COMMAND&#95;PAUSE&#95;WAYPOINTS = 32*
+** datalong: 1 = Pause or 0 = Unpause waypoint movement.
+** Resulting source or target must be a creature.
+
+
+* *SCRIPT&#95;COMMAND&#95;XP&#95;USER = 33*
+** datalong: Set experience gain to 1 = On or 0 = Off
+** Source or target must be a player.
+_Side note: Only available on wotlk version._
+
+
+* *SCRIPT&#95;COMMAND&#95;TERMINATE&#95;CONDITION = 34*
+** datalong: "Condition entry":conditions#condition_entry to check.
+** datalong2: "Quest entry":quest_template#entry to mark as failed for the player (if provided).
+** data&#95;flags:
+
+|!(data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL)|Terminate when condition is true.|
+|data&#95;flags &amp; SCRIPT&#95;FLAG&#95;COMMAND&#95;ADDITIONAL|Terminate when condition is false.|
+
+* *SCRIPT&#95;COMMAND&#95;SEND&#95;AI&#95;EVENT&#95;AROUND = 35*
+** datalong: AI event id. Only EventAI events are accepted.
+** datalong2: Radius.
+** Source and target must be a creature.
+
+* *SCRIPT_COMMAND_SET_FACING = 36*
+** Resulting source must be a creature; Resulting target must be a Worldobject.
+** data_flags & SCRIPT_FLAG_COMMAND_ADDITIONAL also set TargetGuid of resultingSource to resultingTarget. In this case resultingTarget MUST be Creature/ Player
+** datalong != 0 Reset TargetGuid, Reset orientation
+
+* *SCRIPT_COMMAND_MOVE_DYNAMIC = 37*
+** Resulting source must be a creature; Resulting target must be a Worldobject.
+** datalong = 0:  Move resulting source towards resulting target
+** datalong != 0: Move resulting source to a random point between datalong2..datalong around resulting target.
+** orientation != 0: Obtain a random point around resulting target in direction of orientation
+** data_flags & SCRIPT_FLAG_COMMAND_ADDITIONAL Obtain a point in direction of resulting target->GetOrientation + orientation
+** for resulting target == resulting source and orientation == 0 this will mean resulting source moving forward
+
+* *SCRIPT_COMMAND_SEND_MAIL = 38*
+** Resulting source should be a Creature OR NULL. Resulting target must be Player
+** datalong = mailTemplateId
+** datalong2: AlternativeSenderEntry. Use as sender-Entry of the sent mail
+** dataint1: Delay (>= 0) in Seconds
+
+* *SCRIPT_COMMAND_SET_FLY = 39*
+** Resulting source must be a creature.
+** datalong = bool 0=off, 1=on
+** data_flags & SCRIPT_FLAG_COMMAND_ADDITIONAL set/unset byte flag UNIT_BYTE1_FLAG_FLY_ANIM
+
+* *SCRIPT_COMMAND_DESPAWN_GO = 40*
+** Resulting target must be a Gameobject. Please note that not all gameobject types support this command.
+
+* *SCRIPT_COMMAND_RESPAWN = 41*
+** resultingSource = Creature. Requires SCRIPT_FLAG_BUDDY_IS_DESPAWNED to find dead or despawned targets
+
+* *SCRIPT_COMMAND_SET_EQUIPMENT_SLOTS = 42*
+** Resulting source must be a creature.
+** datalong = resetDefault: bool 0=false, 1=true
+** dataint = main hand slot; dataint2 = off hand slot; dataint3 = ranged slot
+
+* *SCRIPT_COMMAND_RESET_GO = 43*
+** Resulting target must be a Gameobject. Only works for Gameobject which are doors or buttons (GO type 0 and 1)
